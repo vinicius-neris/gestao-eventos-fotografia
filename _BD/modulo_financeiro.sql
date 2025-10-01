@@ -1,5 +1,5 @@
 -- Banco de Dados - Módulo Financeiro
--- Autor: Vinícius Neris Ferreira Santana
+-- Aluno: Vinícius Neris Ferreira Santana
 -- Matrícula: 202210326
 
 CREATE DATABASE gestao_eventos;
