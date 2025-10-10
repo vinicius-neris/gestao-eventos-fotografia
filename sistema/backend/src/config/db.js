@@ -5,7 +5,7 @@ const Database = require('better-sqlite3');
 const dbPath = path.join(__dirname, '..', 'data.db');
 const db = new Database(dbPath);
 
-// criar tabelas se não existirem
+// criar tabelas
 db.exec(`
 PRAGMA foreign_keys = ON;
 
@@ -93,14 +93,14 @@ CREATE TABLE IF NOT EXISTS pagamentos (
 
 `);
 
-// popular formas de pagamento se ainda não houver
+// popular formas de pagamento
 const countFP = db.prepare('SELECT COUNT(*) as c FROM formas_pagamento').get().c;
 if (!countFP) {
   const ins = db.prepare('INSERT INTO formas_pagamento (nome) VALUES (?)');
   ['Cartão de Crédito','Pix','Boleto','Transferência'].forEach(name => ins.run(name));
 }
 
-// criar usuário gerente padrão para testes, se não existir
+// criar usuário gerente padrão para testes
 const admin = db.prepare('SELECT id FROM usuarios WHERE email = ?').get('admin@local');
 if (!admin) {
   db.prepare('INSERT INTO usuarios (nome,email,senha_hash,role) VALUES (?,?,?,?)')
