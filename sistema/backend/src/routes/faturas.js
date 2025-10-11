@@ -1,42 +1,55 @@
-// routes/faturas.js
+// routes/pedidos.js
 const express = require('express');
-const db = require('../config/db');
 const router = express.Router();
+const db = require('../config/db'); // Ajuste o caminho para db.js
 
-// gerar fatura para pedido
+// Rota para criar um novo pedido
 router.post('/', (req, res) => {
-  const { pedido_id, valor_total, data_vencimento } = req.body;
-  if (!pedido_id || !valor_total) return res.status(400).json({ error: 'pedido_id e valor_total obrigatórios' });
-  const exist = db.prepare('SELECT id FROM pedidos WHERE id = ?').get(pedido_id);
-  if (!exist) return res.status(404).json({ error: 'Pedido não encontrado' });
-  const stmt = db.prepare('INSERT INTO faturas (pedido_id, valor_total, data_vencimento) VALUES (?,?,?)');
-  const info = stmt.run(pedido_id, valor_total, data_vencimento || null);
-  // marcar pedido como faturado
-  db.prepare("UPDATE pedidos SET status = 'faturado' WHERE id = ?").run(pedido_id);
-  const fatura = db.prepare('SELECT * FROM faturas WHERE id = ?').get(info.lastInsertRowid);
-  res.status(201).json(fatura);
+  const { evento_id, cliente_id, descricao, valor } = req.body;
+  
+  // Validação básica
+  if (!cliente_id || !valor) {
+    return res.status(400).json({ error: 'Cliente e valor são obrigatórios.' });
+  }
+  
+  if (isNaN(valor) || valor <= 0) {
+    return res.status(400).json({ error: 'Valor deve ser um número positivo.' });
+  }
+  
+  try {
+    const stmt = db.prepare('INSERT INTO pedidos (evento_id, cliente_id, descricao, valor) VALUES (?, ?, ?, ?)');
+    const info = stmt.run(evento_id, cliente_id, descricao, valor);
+    res.status(201).json({ id: info.lastInsertRowid, evento_id, cliente_id, descricao, valor });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
 });
 
-// listar faturas
+// Rota para listar todos os pedidos
 router.get('/', (req, res) => {
-  const { pedido_id, status_pagamento } = req.query;
-  let sql = 'SELECT f.*, p.descricao as pedido_desc FROM faturas f JOIN pedidos p ON f.pedido_id = p.id';
-  const where = [];
-  const params = [];
-  if (pedido_id) { where.push('f.pedido_id = ?'); params.push(pedido_id); }
-  if (status_pagamento) { where.push('f.status_pagamento = ?'); params.push(status_pagamento); }
-  if (where.length) sql += ' WHERE ' + where.join(' AND ');
-  sql += ' ORDER BY f.data_emissao DESC';
-  const rows = db.prepare(sql).all(...params);
-  res.json(rows);
+  try {
+    const stmt = db.prepare('SELECT p.*, u.nome as cliente_nome, e.nome as evento_nome FROM pedidos p JOIN usuarios u ON p.cliente_id = u.id LEFT JOIN eventos e ON p.evento_id = e.id');
+    const pedidos = stmt.all();
+    res.json(pedidos);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
 });
 
-// detalhe de fatura
+// Rota para obter um pedido por ID
 router.get('/:id', (req, res) => {
-  const f = db.prepare('SELECT f.*, p.descricao as pedido_desc FROM faturas f JOIN pedidos p ON f.pedido_id = p.id WHERE f.id = ?').get(req.params.id);
-  if (!f) return res.status(404).json({ error: 'Fatura não encontrada' });
-  res.json(f);
+  const { id } = req.params;
+  try {
+    const stmt = db.prepare('SELECT p.*, u.nome as cliente_nome, e.nome as evento_nome FROM pedidos p JOIN usuarios u ON p.cliente_id = u.id LEFT JOIN eventos e ON p.evento_id = e.id WHERE p.id = ?');
+    const pedido = stmt.get(id);
+    if (pedido) {
+      res.json(pedido);
+    } else {
+      res.status(404).json({ error: 'Pedido não encontrado.' });
+    }
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
 });
 
 module.exports = router;
-
