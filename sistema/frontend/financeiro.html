@@ -1,0 +1,431 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Financeiro - Gestão Eventos</title>
+<style>
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  background: linear-gradient(135deg, #0f1724 0%, #1a2332 100%);
+  color: #e6eef8;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+  padding: 20px;
+  min-height: 100vh;
+}
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 30px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid #374151;
+}
+
+h1 {
+  font-size: 32px;
+  color: #fff;
+}
+
+.user-info {
+  color: #9ca3af;
+  font-size: 14px;
+}
+
+.card {
+  background: #111827;
+  padding: 24px;
+  border-radius: 12px;
+  margin-bottom: 20px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+}
+
+.card h3 {
+  margin-bottom: 20px;
+  color: #fff;
+  font-size: 20px;
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+input, select, button {
+  padding: 10px 14px;
+  border-radius: 8px;
+  border: 1px solid #374151;
+  background: #1f2937;
+  color: #fff;
+  font-size: 14px;
+  transition: all 0.2s;
+}
+
+input:focus, select:focus {
+  outline: none;
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+input::placeholder {
+  color: #6b7280;
+}
+
+button {
+  background: #16a34a;
+  border: none;
+  color: #fff;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.2s;
+}
+
+button:hover {
+  background: #15803d;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(22, 163, 74, 0.4);
+}
+
+button:active {
+  transform: translateY(0);
+}
+
+button:disabled {
+  background: #374151;
+  cursor: not-allowed;
+  transform: none;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 16px;
+  background: #1f2937;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+thead {
+  background: #374151;
+}
+
+th, td {
+  padding: 12px 16px;
+  text-align: left;
+  border-bottom: 1px solid #374151;
+}
+
+th {
+  font-weight: 600;
+  color: #f3f4f6;
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+td {
+  color: #d1d5db;
+}
+
+tr:last-child td {
+  border-bottom: none;
+}
+
+tbody tr:hover {
+  background: #2d3748;
+}
+
+.status-badge {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.status-pendente {
+  background: #7c2d12;
+  color: #fca5a5;
+}
+
+.status-pago {
+  background: #14532d;
+  color: #86efac;
+}
+
+.message {
+  padding: 12px 16px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  font-size: 14px;
+  display: none;
+}
+
+.message.error {
+  background: #7f1d1d;
+  border: 1px solid #991b1b;
+  color: #fca5a5;
+}
+
+.message.success {
+  background: #14532d;
+  border: 1px solid #166534;
+  color: #86efac;
+}
+
+.message.show {
+  display: block;
+  animation: slideIn 0.3s ease;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.empty-state {
+  text-align: center;
+  padding: 40px;
+  color: #9ca3af;
+}
+</style>
+</head>
+<body>
+<div class="container">
+  <header>
+    <h1>Financeiro</h1>
+    <div class="user-info" id="userInfo">Carregando...</div>
+  </header>
+  
+  <div id="globalMessage" class="message"></div>
+  
+  <div class="card">
+    <h3>Criar Pedido</h3>
+    <form id="formPedido" onsubmit="criarPedido(event)">
+      <div class="form-row">
+        <input id="cliente_id" type="number" placeholder="ID do cliente (ex: 1)" required />
+        <input id="descricao" placeholder="Descrição" />
+        <input id="valor" type="number" step="0.01" placeholder="Valor" required />
+      </div>
+      <button type="submit">Criar Pedido</button>
+    </form>
+  </div>
+
+  <div class="card">
+    <h3>Gerar Fatura</h3>
+    <form id="formFatura" onsubmit="gerarFatura(event)">
+      <div class="form-row">
+        <input id="pedido_id" type="number" placeholder="ID do pedido" required />
+        <input id="valor_total" type="number" step="0.01" placeholder="Valor total" required />
+        <input id="vencimento" type="date" placeholder="Data vencimento" required />
+      </div>
+      <button type="submit">Gerar Fatura</button>
+    </form>
+  </div>
+
+  <div class="card">
+    <h3>Registrar Pagamento</h3>
+    <form id="formPagamento" onsubmit="registrarPagamento(event)">
+      <div class="form-row">
+        <input id="fatura_id" type="number" placeholder="ID da fatura" required />
+        <input id="valor_pago" type="number" step="0.01" placeholder="Valor Pago" required />
+        <select id="forma" required>
+          <option value="">Forma de pagamento</option>
+          <option value="1">Cartão de Crédito</option>
+          <option value="2">Pix</option>
+          <option value="3">Boleto</option>
+          <option value="4">Transferência</option>
+        </select>
+        <input id="comprovante" type="file" />
+      </div>
+      <button type="submit">Registrar Pagamento</button>
+    </form>
+  </div>
+
+  <div class="card">
+    <h3>Listar Faturas</h3>
+    <button onclick="listarFaturas()">Atualizar Lista</button>
+    <div id="lista"></div>
+  </div>
+</div>
+
+<script>
+// Carregar informações do usuário
+window.addEventListener('DOMContentLoaded', () => {
+  const usuario = JSON.parse(localStorage.getItem('usuario') || '{}');
+  if (usuario.nome) {
+    document.getElementById('userInfo').textContent = `${usuario.nome} (${usuario.role})`;
+  } else {
+    document.getElementById('userInfo').textContent = 'Usuário não identificado';
+  }
+  
+  // Carregar faturas automaticamente
+  listarFaturas();
+});
+
+function showMessage(text, type) {
+  const messageEl = document.getElementById('globalMessage');
+  messageEl.textContent = text;
+  messageEl.className = `message ${type} show`;
+  setTimeout(() => {
+    messageEl.classList.remove('show');
+  }, 5000);
+}
+
+async function criarPedido(event) {
+  event.preventDefault();
+  
+  const cliente_id = parseInt(document.getElementById('cliente_id').value);
+  const descricao = document.getElementById('descricao').value;
+  const valor = parseFloat(document.getElementById('valor').value);
+  
+  if (isNaN(valor) || valor <= 0) {
+    showMessage('Valor deve ser um número positivo.', 'error');
+    return;
+  }
+  
+  try {
+    const res = await fetch('http://localhost:3333/api/pedidos', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ cliente_id, descricao, valor })
+    });
+    
+    const data = await res.json();
+    
+    if (res.ok) {
+      showMessage(`Pedido #${data.id} criado com sucesso!`, 'success');
+      document.getElementById('formPedido').reset();
+    } else {
+      showMessage(data.error || 'Erro ao criar pedido.', 'error');
+    }
+  } catch (error) {
+    showMessage('Erro ao conectar com o servidor.', 'error');
+  }
+}
+
+async function gerarFatura(event) {
+  event.preventDefault();
+  
+  const pedido_id = parseInt(document.getElementById('pedido_id').value);
+  const valor_total = parseFloat(document.getElementById('valor_total').value);
+  const data_vencimento = document.getElementById('vencimento').value;
+  
+  if (isNaN(valor_total) || valor_total <= 0) {
+    showMessage('Valor total deve ser um número positivo.', 'error');
+    return;
+  }
+  
+  try {
+    const res = await fetch('http://localhost:3333/api/faturas', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ pedido_id, valor_total, data_vencimento })
+    });
+    
+    const data = await res.json();
+    
+    if (res.ok) {
+      showMessage(`Fatura #${data.id} criada com sucesso!`, 'success');
+      document.getElementById('formFatura').reset();
+      listarFaturas();
+    } else {
+      showMessage(data.error || 'Erro ao gerar fatura.', 'error');
+    }
+  } catch (error) {
+    showMessage('Erro ao conectar com o servidor.', 'error');
+  }
+}
+
+async function registrarPagamento(event) {
+  event.preventDefault();
+  
+  const fatura_id = parseInt(document.getElementById('fatura_id').value);
+  const valor_pago = parseFloat(document.getElementById('valor_pago').value);
+  const forma_pagamento_id = document.getElementById('forma').value;
+  const file = document.getElementById('comprovante').files[0];
+  
+  if (isNaN(valor_pago) || valor_pago <= 0) {
+    showMessage('Valor pago deve ser um número positivo.', 'error');
+    return;
+  }
+  
+  const fd = new FormData();
+  fd.append('fatura_id', fatura_id);
+  fd.append('valor_pago', valor_pago);
+  fd.append('forma_pagamento_id', forma_pagamento_id);
+  if (file) fd.append('comprovante', file);
+  
+  try {
+    const res = await fetch('http://localhost:3333/api/pagamentos', {
+      method: 'POST',
+      body: fd
+    });
+    
+    const data = await res.json();
+    
+    if (res.ok) {
+      showMessage(`Pagamento #${data.id} registrado com sucesso!`, 'success');
+      document.getElementById('formPagamento').reset();
+      listarFaturas();
+    } else {
+      showMessage(data.error || 'Erro ao registrar pagamento.', 'error');
+    }
+  } catch (error) {
+    showMessage('Erro ao conectar com o servidor.', 'error');
+  }
+}
+
+async function listarFaturas() {
+  try {
+    const res = await fetch('http://localhost:3333/api/faturas');
+    const arr = await res.json();
+    const root = document.getElementById('lista');
+    
+    if (!arr || !arr.length) {
+      root.innerHTML = '<div class="empty-state">Nenhuma fatura encontrada</div>';
+      return;
+    }
+    
+    let html = '<table><thead><tr><th>ID</th><th>Cliente</th><th>Descrição</th><th>Valor</th><th>Vencimento</th><th>Status</th></tr></thead><tbody>';
+    arr.forEach(f => {
+      const statusClass = f.status_pagamento === 'pago' ? 'status-pago' : 'status-pendente';
+      const statusText = f.status_pagamento === 'pago' ? 'Pago' : 'Pendente';
+      html += `<tr>
+        <td>#${f.id}</td>
+        <td>${f.cliente_nome || 'N/A'}</td>
+        <td>${f.pedido_desc || 'Sem descrição'}</td>
+        <td>R$ ${parseFloat(f.valor_total).toFixed(2)}</td>
+        <td>${f.data_vencimento || 'N/A'}</td>
+        <td><span class="status-badge ${statusClass}">${statusText}</span></td>
+      </tr>`;
+    });
+    html += '</tbody></table>';
+    root.innerHTML = html;
+  } catch (error) {
+    document.getElementById('lista').innerHTML = '<div class="empty-state">Erro ao carregar faturas</div>';
+  }
+}
+</script>
+</body>
+</html>
+

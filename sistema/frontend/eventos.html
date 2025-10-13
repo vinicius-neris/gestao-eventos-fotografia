@@ -1,0 +1,360 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Eventos - Gestão Eventos</title>
+<style>
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  background: linear-gradient(135deg, #0f1724 0%, #1a2332 100%);
+  color: #e6eef8;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+  padding: 20px;
+  min-height: 100vh;
+}
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 30px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid #374151;
+}
+
+h1 {
+  font-size: 32px;
+  color: #fff;
+}
+
+.nav {
+  display: flex;
+  gap: 15px;
+}
+
+.nav a {
+  color: #60a5fa;
+  text-decoration: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+  transition: all 0.2s;
+}
+
+.nav a:hover {
+  background: #1f2937;
+  color: #93c5fd;
+}
+
+.card {
+  background: #111827;
+  padding: 24px;
+  border-radius: 12px;
+  margin-bottom: 20px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+}
+
+.card h3 {
+  margin-bottom: 20px;
+  color: #fff;
+  font-size: 20px;
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+input, select, button, textarea {
+  padding: 10px 14px;
+  border-radius: 8px;
+  border: 1px solid #374151;
+  background: #1f2937;
+  color: #fff;
+  font-size: 14px;
+  transition: all 0.2s;
+}
+
+textarea {
+  resize: vertical;
+  min-height: 80px;
+  font-family: inherit;
+}
+
+input:focus, select:focus, textarea:focus {
+  outline: none;
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+input::placeholder, textarea::placeholder {
+  color: #6b7280;
+}
+
+button {
+  background: #16a34a;
+  border: none;
+  color: #fff;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.2s;
+}
+
+button:hover {
+  background: #15803d;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(22, 163, 74, 0.4);
+}
+
+button:active {
+  transform: translateY(0);
+}
+
+button:disabled {
+  background: #374151;
+  cursor: not-allowed;
+  transform: none;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 16px;
+  background: #1f2937;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+thead {
+  background: #374151;
+}
+
+th, td {
+  padding: 12px 16px;
+  text-align: left;
+  border-bottom: 1px solid #374151;
+}
+
+th {
+  font-weight: 600;
+  color: #f3f4f6;
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+td {
+  color: #d1d5db;
+}
+
+tr:last-child td {
+  border-bottom: none;
+}
+
+tbody tr:hover {
+  background: #2d3748;
+}
+
+.message {
+  padding: 12px 16px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  font-size: 14px;
+  display: none;
+}
+
+.message.error {
+  background: #7f1d1d;
+  border: 1px solid #991b1b;
+  color: #fca5a5;
+}
+
+.message.success {
+  background: #14532d;
+  border: 1px solid #166534;
+  color: #86efac;
+}
+
+.message.show {
+  display: block;
+  animation: slideIn 0.3s ease;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.empty-state {
+  text-align: center;
+  padding: 40px;
+  color: #9ca3af;
+}
+
+.btn-action {
+  padding: 6px 12px;
+  font-size: 12px;
+  margin-right: 5px;
+  background: #2563eb;
+}
+
+.btn-action:hover {
+  background: #1d4ed8;
+}
+
+.btn-delete {
+  background: #dc2626;
+}
+
+.btn-delete:hover {
+  background: #b91c1c;
+}
+</style>
+</head>
+<body>
+<div class="container">
+  <header>
+    <h1>Gerenciamento de Eventos</h1>
+    <nav class="nav">
+      <a href="financeiro.html">Financeiro</a>
+      <a href="fotografos.html">Fotógrafos</a>
+      <a href="index.html">Sair</a>
+    </nav>
+  </header>
+  
+  <div id="globalMessage" class="message"></div>
+  
+  <div class="card">
+    <h3>Criar Novo Evento</h3>
+    <form id="formEvento" onsubmit="criarEvento(event)">
+      <div class="form-row">
+        <input id="nome" placeholder="Nome do evento" required />
+        <input id="data_evento" type="date" required />
+        <input id="hora_evento" type="time" required />
+        <input id="local" placeholder="Local do evento" />
+      </div>
+      <button type="submit">Criar Evento</button>
+    </form>
+  </div>
+
+  <div class="card">
+    <h3>Lista de Eventos</h3>
+    <button onclick="listarEventos()">Atualizar Lista</button>
+    <div id="listaEventos"></div>
+  </div>
+</div>
+
+<script>
+const API_URL = 'http://localhost:3333';
+
+// Carregar informações do usuário
+window.addEventListener('DOMContentLoaded', () => {
+  const usuario = JSON.parse(localStorage.getItem('usuario') || '{}');
+  if (!usuario.id) {
+    window.location.href = 'index.html';
+  }
+  listarEventos();
+});
+
+function showMessage(text, type) {
+  const messageEl = document.getElementById('globalMessage');
+  messageEl.textContent = text;
+  messageEl.className = `message ${type} show`;
+  setTimeout(() => {
+    messageEl.classList.remove('show');
+  }, 5000);
+}
+
+async function criarEvento(event) {
+  event.preventDefault();
+  
+  const usuario = JSON.parse(localStorage.getItem('usuario') || '{}');
+  const nome = document.getElementById('nome').value;
+  const data_evento = document.getElementById('data_evento').value;
+  const hora_evento = document.getElementById('hora_evento').value;
+  const local = document.getElementById('local').value;
+  
+  try {
+    const res = await fetch(`${API_URL}/api/eventos`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ 
+        nome, 
+        data_evento, 
+        hora_evento, 
+        local, 
+        criado_por: usuario.id 
+      })
+    });
+    
+    const data = await res.json();
+    
+    if (res.ok) {
+      showMessage(`Evento "${data.nome}" criado com sucesso!`, 'success');
+      document.getElementById('formEvento').reset();
+      listarEventos();
+    } else {
+      showMessage(data.error || 'Erro ao criar evento.', 'error');
+    }
+  } catch (error) {
+    showMessage('Erro ao conectar com o servidor.', 'error');
+  }
+}
+
+async function listarEventos() {
+  try {
+    const res = await fetch(`${API_URL}/api/eventos`);
+    const eventos = await res.json();
+    const root = document.getElementById('listaEventos');
+    
+    if (!eventos || !eventos.length) {
+      root.innerHTML = '<div class="empty-state">Nenhum evento encontrado</div>';
+      return;
+    }
+    
+    let html = '<table><thead><tr><th>ID</th><th>Nome</th><th>Data</th><th>Hora</th><th>Local</th><th>Criado por</th><th>Ações</th></tr></thead><tbody>';
+    eventos.forEach(e => {
+      html += `<tr>
+        <td>#${e.id}</td>
+        <td>${e.nome}</td>
+        <td>${e.data_evento || 'N/A'}</td>
+        <td>${e.hora_evento || 'N/A'}</td>
+        <td>${e.local || 'N/A'}</td>
+        <td>${e.criado_por_nome || 'N/A'}</td>
+        <td>
+          <button class="btn-action" onclick="verDetalhes(${e.id})">Ver Detalhes</button>
+        </td>
+      </tr>`;
+    });
+    html += '</tbody></table>';
+    root.innerHTML = html;
+  } catch (error) {
+    document.getElementById('listaEventos').innerHTML = '<div class="empty-state">Erro ao carregar eventos</div>';
+  }
+}
+
+function verDetalhes(id) {
+  alert(`Funcionalidade de detalhes do evento #${id} será implementada em breve!`);
+}
+</script>
+</body>
+</html>
+
