@@ -1,0 +1,338 @@
+================================================================================
+                    API MOBILE - SISTEMA DE GESTÃO DE EVENTOS
+                          Instruções de Uso e Teste
+================================================================================
+
+1. DADOS DE ACESSO DO SISTEMA
+================================================================================
+
+CREDENCIAIS PADRÃO (Admin):
+  Email: admin@local
+  Senha: admin
+
+ENDPOINT DE LOGIN:
+  POST http://localhost:3333/api/auth/login
+
+EXEMPLO DE REQUISIÇÃO:
+  {
+    "email": "admin@local",
+    "senha": "admin"
+  }
+
+RESPOSTA (Token JWT):
+  {
+    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+    "usuario": {
+      "id": 1,
+      "nome": "Admin",
+      "email": "admin@local",
+      "role": "gerente"
+    }
+  }
+
+ROLES DISPONÍVEIS:
+  - gerente: Acesso total ao sistema
+  - funcionario: Acesso a pedidos, faturas e pagamentos
+  - cliente: Acesso apenas aos seus dados
+  - fotografo: Acesso a eventos e fotos
+
+================================================================================
+
+2. ESTRUTURA DO PROJETO
+================================================================================
+
+api_mobile/
+├── api/
+│   ├── middleware/
+│   │   └── auth.js              (Autenticação JWT)
+│   ├── server.js                (Servidor principal da API)
+│   └── package.json             (Dependências)
+├── sistema/
+│   ├── config/
+│   │   └── db.js                (Configuração do banco de dados)
+│   ├── uploads/                 (Diretório para comprovantes)
+│   └── data.db                  (Banco de dados SQLite)
+├── _DOCS/
+│   └── API_DOCUMENTACAO.md      (Documentação completa)
+├── _BD/
+│   └── schema.sql               (Script SQL)
+└── integracao/
+    └── (Módulos de integração externa)
+
+================================================================================
+
+3. COMO TESTAR A API
+================================================================================
+
+PASSO 1: Instalar Dependências
+  cd api/
+  npm install
+
+PASSO 2: Iniciar o Servidor
+  npm start
+  
+  Você verá:
+  ✅ API Mobile rodando em http://localhost:3333
+  📚 Documentação: http://localhost:3333/api/docs
+  🔍 Health Check: http://localhost:3333/api/health
+
+PASSO 3: Testar com Insomnia ou Postman
+
+  3.1. Fazer Login:
+    - Método: POST
+    - URL: http://localhost:3333/api/auth/login
+    - Body (JSON):
+      {
+        "email": "admin@local",
+        "senha": "admin"
+      }
+    - Copiar o token da resposta
+
+  3.2. Listar Eventos:
+    - Método: GET
+    - URL: http://localhost:3333/api/eventos
+    - Headers:
+      Authorization: Bearer <token_copiado>
+
+  3.3. Criar Evento:
+    - Método: POST
+    - URL: http://localhost:3333/api/eventos
+    - Headers:
+      Authorization: Bearer <token_copiado>
+      Content-Type: application/json
+    - Body (JSON):
+      {
+        "nome": "Casamento João e Maria",
+        "data_evento": "2025-12-15",
+        "hora_evento": "18:00",
+        "local": "Salão de Festas Centro"
+      }
+
+  3.4. Criar Pedido:
+    - Método: POST
+    - URL: http://localhost:3333/api/pedidos
+    - Headers:
+      Authorization: Bearer <token_copiado>
+      Content-Type: application/json
+    - Body (JSON):
+      {
+        "cliente_id": 2,
+        "evento_id": 1,
+        "valor": 5000.00,
+        "descricao": "Fotografia do casamento"
+      }
+
+  3.5. Criar Fatura:
+    - Método: POST
+    - URL: http://localhost:3333/api/faturas
+    - Headers:
+      Authorization: Bearer <token_copiado>
+      Content-Type: application/json
+    - Body (JSON):
+      {
+        "pedido_id": 1,
+        "valor_total": 5000.00,
+        "data_vencimento": "2025-12-20"
+      }
+
+  3.6. Registrar Pagamento:
+    - Método: POST
+    - URL: http://localhost:3333/api/pagamentos
+    - Headers:
+      Authorization: Bearer <token_copiado>
+    - Body (form-data):
+      - fatura_id: 1
+      - forma_pagamento_id: 4
+      - valor_pago: 5000.00
+      - comprovante: (arquivo PDF/imagem)
+
+================================================================================
+
+4. DESCRIÇÃO DOS ENDPOINTS
+================================================================================
+
+AUTENTICAÇÃO (Sem JWT)
+  POST /api/auth/login
+    Autentica um usuário e retorna um token JWT
+    Payload: { email, senha }
+
+  POST /api/auth/registrar
+    Cria um novo usuário no sistema
+    Payload: { nome, email, senha, role }
+
+EVENTOS (Com JWT)
+  GET /api/eventos
+    Lista todos os eventos
+    
+  GET /api/eventos/:id
+    Obtém detalhes de um evento específico
+    
+  POST /api/eventos
+    Cria um novo evento (apenas gerentes)
+    Payload: { nome, data_evento, hora_evento, local }
+
+PEDIDOS (Com JWT)
+  GET /api/pedidos
+    Lista pedidos (clientes veem apenas seus pedidos)
+    
+  GET /api/pedidos/:id
+    Obtém detalhes de um pedido específico
+    
+  POST /api/pedidos
+    Cria um novo pedido
+    Payload: { cliente_id, evento_id, valor, descricao }
+
+FATURAS (Com JWT)
+  GET /api/faturas
+    Lista faturas (clientes veem apenas suas faturas)
+    
+  GET /api/faturas/:id
+    Obtém detalhes de uma fatura específica
+    
+  POST /api/faturas
+    Cria uma nova fatura a partir de um pedido
+    Payload: { pedido_id, valor_total, data_vencimento }
+
+PAGAMENTOS (Com JWT)
+  GET /api/pagamentos
+    Lista todos os pagamentos
+    
+  GET /api/pagamentos/:id
+    Obtém detalhes de um pagamento específico
+    
+  POST /api/pagamentos
+    Registra um novo pagamento com comprovante
+    Payload (form-data): { fatura_id, forma_pagamento_id, valor_pago, comprovante }
+
+HEALTH CHECK (Sem JWT)
+  GET /api/health
+    Verifica se a API está funcionando
+
+================================================================================
+
+5. FORMAS DE PAGAMENTO DISPONÍVEIS
+================================================================================
+
+ID  Nome
+1   Dinheiro
+2   Cartão de Crédito
+3   Cartão de Débito
+4   Transferência Bancária
+5   PIX
+
+================================================================================
+
+6. CÓDIGOS DE STATUS HTTP
+================================================================================
+
+200 OK
+  Requisição bem-sucedida
+
+201 Created
+  Recurso criado com sucesso
+
+400 Bad Request
+  Dados inválidos ou obrigatórios ausentes
+
+401 Unauthorized
+  Token ausente ou inválido
+
+403 Forbidden
+  Acesso negado (permissão insuficiente)
+
+404 Not Found
+  Recurso não encontrado
+
+500 Internal Server Error
+  Erro no servidor
+
+================================================================================
+
+7. EXEMPLO DE FLUXO COMPLETO
+================================================================================
+
+1. Fazer Login:
+   POST /api/auth/login
+   { "email": "admin@local", "senha": "admin" }
+   ✓ Recebe token JWT
+
+2. Listar Eventos:
+   GET /api/eventos
+   Headers: Authorization: Bearer <token>
+   ✓ Recebe lista de eventos
+
+3. Criar Pedido:
+   POST /api/pedidos
+   Headers: Authorization: Bearer <token>
+   { "cliente_id": 2, "evento_id": 1, "valor": 5000.00, "descricao": "..." }
+   ✓ Pedido criado
+
+4. Criar Fatura:
+   POST /api/faturas
+   Headers: Authorization: Bearer <token>
+   { "pedido_id": 1, "valor_total": 5000.00, "data_vencimento": "2025-12-20" }
+   ✓ Fatura criada
+
+5. Registrar Pagamento:
+   POST /api/pagamentos
+   Headers: Authorization: Bearer <token>
+   Form-data: fatura_id=1, forma_pagamento_id=4, valor_pago=5000.00, comprovante=<arquivo>
+   ✓ Pagamento registrado
+
+================================================================================
+
+8. ATUALIZAÇÕES REALIZADAS
+================================================================================
+
+✅ Criada estrutura de pastas conforme solicitado:
+   - _DOCS (documentação)
+   - _BD (banco de dados)
+   - api (API para consumo externo)
+   - sistema (código do sistema)
+   - integracao (módulos de integração)
+
+✅ Desenvolvida API RESTful com:
+   - Autenticação JWT (24h de validade)
+   - Endpoints para Autenticação, Eventos, Pedidos, Faturas e Pagamentos
+   - Validações de dados e tratamento de erros
+   - Suporte a upload de comprovantes
+   - Controle de acesso baseado em roles
+
+✅ Implementadas funcionalidades:
+   - Login e registro de usuários
+   - CRUD de eventos
+   - CRUD de pedidos
+   - CRUD de faturas
+   - Registro de pagamentos com comprovante
+   - Filtros por role (gerente, funcionario, cliente, fotografo)
+
+✅ Documentação completa:
+   - Endpoints com exemplos de requisição/resposta
+   - Payloads de entrada e saída
+   - Códigos de status HTTP
+   - Fluxo completo de uso
+
+================================================================================
+
+9. PRÓXIMOS PASSOS
+================================================================================
+
+1. Atualizar o repositório GitHub com os novos arquivos
+2. Adicionar o professor (@wandersonps) como colaborador
+3. Testar todos os endpoints com Insomnia ou Postman
+4. Documentar qualquer customização adicional
+
+================================================================================
+
+10. SUPORTE
+================================================================================
+
+Para dúvidas sobre a API, consulte:
+  - _DOCS/API_DOCUMENTACAO.md (documentação completa)
+  - Exemplos de requisição neste arquivo
+  - Código-fonte em api/server.js
+
+================================================================================
+                                  FIM DO DOCUMENTO
+================================================================================
+
