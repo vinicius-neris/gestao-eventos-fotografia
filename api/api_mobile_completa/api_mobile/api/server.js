@@ -22,7 +22,7 @@ app.use('/uploads', express.static(uploadsDir));
 const upload = multer({ dest: uploadsDir });
 
 // ============================================
-// ROTAS DE AUTENTICAÇÃO (Sem JWT)
+// ROTAS DE AUTENTICAÇÃO
 // ============================================
 
 // POST /api/auth/login - Fazer login
@@ -105,7 +105,7 @@ app.post('/api/auth/registrar', (req, res) => {
 });
 
 // ============================================
-// ROTAS DE EVENTOS (Com JWT)
+// ROTAS DE EVENTOS 
 // ============================================
 
 // GET /api/eventos - Listar eventos
@@ -179,7 +179,7 @@ app.post('/api/eventos', verificarToken, (req, res) => {
 });
 
 // ============================================
-// ROTAS DE PEDIDOS (Com JWT)
+// ROTAS DE PEDIDOS
 // ============================================
 
 // GET /api/pedidos - Listar pedidos
@@ -267,7 +267,7 @@ app.post('/api/pedidos', verificarToken, (req, res) => {
 });
 
 // ============================================
-// ROTAS DE FATURAS (Com JWT)
+// ROTAS DE FATURAS
 // ============================================
 
 // GET /api/faturas - Listar faturas
@@ -361,7 +361,7 @@ app.post('/api/faturas', verificarToken, (req, res) => {
 });
 
 // ============================================
-// ROTAS DE PAGAMENTOS (Com JWT)
+// ROTAS DE PAGAMENTOS
 // ============================================
 
 // GET /api/pagamentos - Listar pagamentos
